@@ -1,4 +1,4 @@
-package com.example.app_fast_food.Cart;
+package com.example.app_fast_food.Helper;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.example.app_fast_food.Helper.DatabaseHelper;
+import com.example.app_fast_food.Cart.CartItem;
 import com.example.app_fast_food.Model.Cart;
 import com.example.app_fast_food.Model.Foods;
 
@@ -158,7 +158,8 @@ public class CartDatabase {
                         DatabaseHelper.COLUMN_CART_ID + "=?",
                         new String[]{String.valueOf(cartId)});
 
-                Log.i("Cart", "Đã cập nhật sản phẩm trong giỏ: " + updateResult + " dòng");
+                Log.i("Cart", "Đã cập nhật sản phẩm trong giỏ: " + "từ số lượng" + currentQuantity + "thành số lượng" + newQuantityInput + " số lượng");
+
                 return updateResult > 0;
             }
 

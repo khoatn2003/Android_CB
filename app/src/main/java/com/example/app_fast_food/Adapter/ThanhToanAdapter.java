@@ -2,6 +2,7 @@ package com.example.app_fast_food.Adapter;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,17 +27,17 @@ public class ThanhToanAdapter extends RecyclerView.Adapter<ThanhToanAdapter.View
     private Context context;
     private OnEditItemClickListener listener;
 
+    public interface OnEditItemClickListener{
+        void OnEditItemClick(int position);
+    }
+    public void setOnEditItemClickListener(OnEditItemClickListener listener) {
+        this.listener = listener;
+    }
     public ThanhToanAdapter(List<CartItem> cartItemList, Context context) {
         this.cartItemList = cartItemList;
         this.context = context;
     }
 
-    public interface OnEditItemClickListener{
-        void OnEditItemClick(int position);
-    }
-    public void setOnEditQuantityClickListener(OnEditItemClickListener listener) {
-        this.listener = listener;
-    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -51,9 +52,13 @@ public class ThanhToanAdapter extends RecyclerView.Adapter<ThanhToanAdapter.View
         holder.quantityTxt.setText("x" + item.getQuantity());
         holder.totalTxt.setText(dinhDangTien.dinhdang(item.getToTalPrice()));
 
-        int resId = context.getResources().getIdentifier(item.getFoodImagePath(), "drawable", context.getPackageName());
-        holder.img_products.setImageResource(resId != 0 ? resId : R.drawable.jollibear_logo);
-
+        if(item.getFoodImagePath() != null && !item.getFoodImagePath().isEmpty()) {
+            int resId = context.getResources().getIdentifier(item.getFoodImagePath(), "drawable", context.getPackageName());
+            holder.img_products.setImageResource(resId != 0 ? resId : R.drawable.jollibear_logo);
+        }else{
+            Log.e("AdapterError", "Tên ảnh rỗng hoặc null cho sản phẩm: " + item.getFoodTitle());
+            holder.img_products.setImageResource(R.drawable.jollibear_logo);
+        }
         holder.txtEdit.setOnClickListener(v->{
             if(listener!=null){
                 listener.OnEditItemClick(position);
@@ -68,6 +73,16 @@ public class ThanhToanAdapter extends RecyclerView.Adapter<ThanhToanAdapter.View
         }
 
     }
+
+    // Trong ThanhToanAdapter
+    public void updateData(List<CartItem> newList) {
+        this.cartItemList.clear();
+        if (newList != null) {
+            this.cartItemList.addAll(newList);
+        }
+        notifyDataSetChanged(); // Cập nhật lại giao diện
+    }
+
 
     @Override
     public int getItemCount() {
@@ -90,4 +105,6 @@ public class ThanhToanAdapter extends RecyclerView.Adapter<ThanhToanAdapter.View
             tvNote = itemView.findViewById(R.id.tv_note);
         }
     }
+
+
 }

@@ -1,6 +1,5 @@
 package com.example.app_fast_food.Activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,10 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.app_fast_food.Adapter.dinhDangTien;
-import com.example.app_fast_food.Cart.CartActivity;
-import com.example.app_fast_food.Cart.CartDatabase;
+import com.example.app_fast_food.Helper.CartDatabase;
 import com.example.app_fast_food.Cart.CartItem;
-import com.example.app_fast_food.Model.Cart;
 import com.example.app_fast_food.Model.Foods;
 import com.example.app_fast_food.R;
 import com.example.app_fast_food.databinding.ActivityEditFoodBinding;
@@ -111,47 +108,66 @@ public class EditFoodActivity extends AppCompatActivity {
 
         binding.backBtn.setOnClickListener(v -> finish());
     }
-    private void actionClick() {
-        int cartId = cartItem.getCartId();
-        if (currentUserId == -1) {
-            binding.addToCardBtn.setOnClickListener(view -> {
-                Intent loginIntent = new Intent(EditFoodActivity.this, LoginActivity.class);
-                startActivity(loginIntent);
-                Toast.makeText(EditFoodActivity.this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
-            });
+        private void actionClick() {
+            int cartId = cartItem.getCartId();
+                binding.updateBtn.setOnClickListener(v->{
+                    String note = binding.noteInput.getText().toString().trim();
+                    int currentQuantity = db.getQuantityInCart(currentUserId, item.getId(),note);
 
-        } else {
-            binding.updateBtn.setOnClickListener(v->{
-                String note = binding.noteInput.getText().toString().trim();
-                int currentQuantity = db.getQuantityInCart(currentUserId, item.getId(),note);
+                    boolean success = db.updateToCartById(cartId, currentUserId, item.getId(), currentQuantity, num, note);
+                    if(cartItem.getCartId() >0) {
+                        if (success) {
+                            Toast.makeText(EditFoodActivity.this, "Cập nhật\"" + item.getTitle() + "\" (x" + num + ") thành công", Toast.LENGTH_SHORT).show();
+                            cartItem.setQuantity(num);
+                            cartItem.setNote(note);
 
-                boolean success = db.updateToCartById(cartId, currentUserId, item.getId(), currentQuantity, num, note);
-                if (success) {
-                    Toast.makeText(EditFoodActivity.this, "Cập nhật\"" + item.getTitle() + "\" (x" + num + ") thành công", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(EditFoodActivity.this, CartActivity.class));
-                } else {
-                    Toast.makeText(EditFoodActivity.this, "Lỗi khi cập nhật giỏ hàng!", Toast.LENGTH_SHORT).show();
-                }
+                            Intent resultIntent = new Intent();
+                            resultIntent.putExtra("updatedCartItem", cartItem);
+                            setResult(RESULT_OK, resultIntent);
+                            Log.d("EditFood", "Updated quantity = " + num + " | cartId = " + cartId + "Số lượng sau khi cập nhật" + cartItem.getQuantity());
+                            finish(); // quay lại Cart hoặc Thanh toán
+                        } else {
+                            Toast.makeText(EditFoodActivity.this, "Lỗi khi cập nhật giỏ hàng!", Toast.LENGTH_SHORT).show();
+                        }
+                    }else{
+                        cartItem.setQuantity(num);
+                        cartItem.setNote(note);
+                        Intent resultIntent = new Intent();
+                        resultIntent.putExtra("updatedCartItem", cartItem);
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    }
 
-            });
+                });
 
             binding.deleteBtn.setOnClickListener(v->{
                 String note = binding.noteInput.getText().toString().trim();
                 int currentQuantity = db.getQuantityInCart(currentUserId, item.getId(),note);
 
                 boolean success = db.updateToCartById(cartId, currentUserId, item.getId(), currentQuantity, num, note);
+                if(cartItem.getCartId() > 0){
                 if (success) {
                     Toast.makeText(EditFoodActivity.this, "Đã xóa\"" + item.getTitle() + "\"ra khỏi giỏ hàng", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(EditFoodActivity.this, CartActivity.class));
-                } else {
+                    //startActivity(new Intent(EditFoodActivity.this, CartActivity.class));
+                    cartItem.setQuantity(0);
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("updatedCartItem", cartItem);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                    } else {
                     Toast.makeText(EditFoodActivity.this, "Lỗi khi xóa giỏ hàng!", Toast.LENGTH_SHORT).show();
+                  }
+                }else{
+                    cartItem.setQuantity(0);
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("updatedCartItem", cartItem);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
                 }
             });
 
             binding.emptyBtn.setOnClickListener(view -> finish());
-        }
 
-        binding.cartBtn.setOnClickListener(view -> startActivity(new Intent(EditFoodActivity.this, CartActivity.class)));
     }
 
     private void updateButtonState(CartItem cartItem) {

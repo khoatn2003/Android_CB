@@ -62,6 +62,7 @@ public class SearchFoodAdapter extends RecyclerView.Adapter<SearchFoodAdapter.Se
             context.startActivity(intent);
         });
 
+
     }
 
     @Override

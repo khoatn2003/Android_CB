@@ -1,6 +1,7 @@
 package com.example.app_fast_food.Helper;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -13,8 +14,9 @@ import java.util.List;
 public class FoodsDatabase {
     private final SQLiteDatabase db;
 
-    public FoodsDatabase(SQLiteDatabase db) {
-        this.db = db;
+    public FoodsDatabase(Context context) {
+        DatabaseHelper helper = new DatabaseHelper(context);
+        db = helper.getWritableDatabase();
     }
 
     public boolean addFood(Foods food) { // Sử dụng model Foods bạn đã tạo

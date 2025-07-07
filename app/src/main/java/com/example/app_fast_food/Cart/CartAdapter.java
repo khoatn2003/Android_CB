@@ -1,24 +1,20 @@
 package com.example.app_fast_food.Cart;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.app_fast_food.Activity.DetailFoodActivity;
-import com.example.app_fast_food.Activity.EditFoodActivity;
 import com.example.app_fast_food.Adapter.dinhDangTien;
+import com.example.app_fast_food.Helper.CartDatabase;
 import com.example.app_fast_food.Helper.DatabaseHelper;
 import com.example.app_fast_food.Helper.FoodsDatabase;
-import com.example.app_fast_food.Model.Foods;
 import com.example.app_fast_food.R;
 
 import java.util.List;
@@ -30,19 +26,24 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     private DatabaseHelper db;
     private FoodsDatabase foodDB;
     private int currentUserId;
-    private CartInteractionListener listener; // Interface để giao tiếp lại với Activity
-
+    private CartInteractionListener listener;
+    private OnEditItemClickListener editItemClickListener;
     public interface CartInteractionListener {
         void onCartItemChanged(); // Gọi khi số lượng thay đổi hoặc item bị xóa
         // void onItemRemoved(CartItem item); // Có thể chi tiết hơn nếu cần
     }
-
+    public interface OnEditItemClickListener {
+        void onEditItemClick(int position);
+    }
+    public void setOnEditItemClickListener(OnEditItemClickListener listener) {
+        this.editItemClickListener = listener;
+    }
     public CartAdapter(Context context, List<CartItem> cartItems, int currentUserId, CartInteractionListener listener) {
         this.context = context;
         this.cartItems = cartItems;
         this.cartDB = new CartDatabase(context);
         this.db = new DatabaseHelper(context);
-        this.foodDB = new FoodsDatabase(db.getReadableDatabase());
+        this.foodDB = new FoodsDatabase(context);
         this.currentUserId = currentUserId;
         this.listener = listener;
     }
@@ -59,9 +60,9 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         CartItem item = cartItems.get(position);
 
         holder.titleTxt.setText(item.getFoodTitle());
-        holder.feeEachItem.setText(dinhDangTien.dinhdang(item.getPricePerItem())); // Giá mỗi sản phẩm
+        holder.feeEachItem.setText(dinhDangTien.dinhdang(item.getPricePerItem()));
         holder.numberItemTxt.setText(String.valueOf(item.getQuantity()));
-        holder.totalEachItem.setText(dinhDangTien.dinhdang(item.getToTalPrice())); // Tổng tiền cho loại sản phẩm này
+        holder.totalEachItem.setText(dinhDangTien.dinhdang(item.getToTalPrice()));
 
         // Load ảnh sản phẩm
         String imagePath = item.getFoodImagePath();
@@ -113,16 +114,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         Log.d("CartAdapter", "Binding item: " + item.getFoodTitle() + ", quantity: " + item.getQuantity());
 
         holder.itemView.setOnClickListener(v->{
-            Foods fullFood = foodDB.getFoodById(item.getFoodId());
-
-            if (fullFood != null) {
-                // Chuyển sang EditFoodActivity và truyền dữ liệu
-                Intent intent = new Intent(context, EditFoodActivity.class);
-                intent.putExtra("food", fullFood); // Đầy đủ thông tin món ăn
-                intent.putExtra("cart", item);
-                context.startActivity(intent);
-            } else {
-                Toast.makeText(context, "Không tìm thấy thông tin món ăn", Toast.LENGTH_SHORT).show();
+            if (editItemClickListener != null) {
+                editItemClickListener.onEditItemClick(holder.getAdapterPosition());
             }
         });
     }

@@ -60,7 +60,7 @@ public class SearchActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         recyclerView = findViewById(R.id.recyclerViewResult);
         dbHelper = new DatabaseHelper(this);
-        foodsDB = new FoodsDatabase(dbHelper.getReadableDatabase());
+        foodsDB = new FoodsDatabase(this);
         adapter = new SearchFoodAdapter(this, new ArrayList<>());
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));

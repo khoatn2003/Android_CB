@@ -8,14 +8,20 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.app_fast_food.Activity.EditFoodActivity;
 import com.example.app_fast_food.Activity.MainActivity;
 import com.example.app_fast_food.Activity.ThanhToanActivity;
 import com.example.app_fast_food.Adapter.dinhDangTien;
+import com.example.app_fast_food.Helper.CartDatabase;
 import com.example.app_fast_food.Helper.DatabaseHelper;
+import com.example.app_fast_food.Helper.FoodsDatabase;
 import com.example.app_fast_food.Model.Cart;
+import com.example.app_fast_food.Model.Foods;
 import com.example.app_fast_food.databinding.ActivityCartBinding;
 
 import java.io.Serializable;
@@ -26,8 +32,14 @@ public class CartActivity extends AppCompatActivity {
     ActivityCartBinding binding;
     private CartAdapter cartAdapter;
     private List<CartItem> cartItemList;
+    private DatabaseHelper db;
     private CartDatabase dbCart;
+    private FoodsDatabase foodDB;
     private int currentUserId = -1;
+    private ActivityResultLauncher<Intent> editItemLauncher;
+
+    private static final int REQUEST_EDIT_CART_ITEM = 1001;
+    private static final int REQUEST_THANH_TOAN = 1402;
 
     // Sử dụng đúng tên SharedPreferences và Key bạn đã dùng khi lưu
     public static final String USER_SESSION_PREFS = "user_session";
@@ -44,7 +56,6 @@ public class CartActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         dbCart = new CartDatabase(this);
-
         loadCurrentUserId();
         if (currentUserId == -1) {
             // Người dùng chưa đăng nhập, xử lý tương ứng
@@ -55,14 +66,49 @@ public class CartActivity extends AppCompatActivity {
         setupRecyclerView();
         KiemTraCart();
         loadCartItems();
-        
-        binding.backBtn.setOnClickListener(view -> startActivity(new Intent(CartActivity.this, MainActivity.class)));
+
+        binding.backBtn.setOnClickListener(view -> finish());
         binding.thanhToanbtn.setOnClickListener(view -> {
             Intent intent = new Intent(CartActivity.this, ThanhToanActivity.class);
-            intent.putExtra("cart_items", (Serializable) cartItemList); // truyền danh sách
-            startActivity(intent);
+            intent.putExtra("cart_items", (Serializable) cartItemList);
+            startActivityForResult(intent, REQUEST_THANH_TOAN);
+
         });
-        binding.voucherLayout.setOnClickListener(view -> Toast.makeText(this,"Chuẩn bị ra mắt trang này", Toast.LENGTH_SHORT).show());
+        binding.voucherLayout.setOnClickListener(view -> Toast.makeText(this,"Bạn chưa có voucher nào", Toast.LENGTH_SHORT).show());
+        cartAdapter.setOnEditItemClickListener(position -> {
+            foodDB = new FoodsDatabase(this);
+            CartItem cartItem = cartItemList.get(position);
+            Foods food = foodDB.getFoodById(cartItem.getFoodId());
+            if (food != null) {
+                Intent intent = new Intent(this, EditFoodActivity.class);
+                intent.putExtra("food", food);
+                intent.putExtra("cart", cartItem);
+                //editItemLauncher.launch(intent);
+                startActivityForResult(intent, REQUEST_EDIT_CART_ITEM);
+            }
+        });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadCartItems(); // Load lại từ SQLite
+        KiemTraCart();
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("CartActivityRESULT", "onActivityResult được gọi");
+        if (requestCode == REQUEST_EDIT_CART_ITEM && resultCode == RESULT_OK && data != null) {
+            Log.d("CartActivityINTENT", "Dữ liệu trả về thành công");
+            CartItem updatedItem = (CartItem) data.getSerializableExtra("updatedCartItem");
+            Log.d("CartActivityID", "CartID = " + updatedItem.getCartId() + " | New Qty = " + updatedItem.getQuantity());
+
+            loadCartItems();
+            KiemTraCart();
+        }
+
     }
 
     private void loadCurrentUserId() {
@@ -83,7 +129,6 @@ public class CartActivity extends AppCompatActivity {
             @Override
             public void onCartItemChanged() {
                 calculateAndDisplayTotals();
-                updateCartUIVisibility();
                 KiemTraCart();
             }
         });
@@ -92,31 +137,20 @@ public class CartActivity extends AppCompatActivity {
     }
     private void loadCartItems() {
         if (currentUserId != -1) {
+            dbCart = new CartDatabase(this);
             Cart cart = dbCart.getCartByUser(currentUserId);
             List<CartItem> itemsFromDb = cart.getItems();
             cartItemList.clear(); // Xóa dữ liệu cũ trước khi thêm mới
+            Log.d("CartActivityTest", "Trước khi clear: cartItemList size = " + cartItemList.size());
             if (itemsFromDb != null && !itemsFromDb.isEmpty()) {
                 cartAdapter.updateData(itemsFromDb);
-                calculateAndDisplayTotals();
-
+                Log.d("CartActivityTest", "Sau updateData: cartItemList size = " + cartItemList.size());
             } else {
                 cartAdapter.updateData(new ArrayList<>());
             }
-            Log.d("CartActivity", "Có " + cartItemList.size() + " sản phẩm");
+            calculateAndDisplayTotals();
         } else {
-            // Xử lý trường hợp không có userId (đã xử lý ở onCreate, nhưng để an toàn)
             cartAdapter.updateData(new ArrayList<>());
-        }
-    }
-
-    private void updateCartUIVisibility() {
-        if (cartAdapter.getItemCount() == 0) {
-            binding.cartView.setVisibility(View.GONE);
-            binding.layoutTotal.setVisibility(View.GONE);
-        } else {
-            binding.cartView.setVisibility(View.VISIBLE);
-            binding.layoutTotal.setVisibility(View.VISIBLE);
-            calculateAndDisplayTotals(); // Tính toán và hiển thị tổng tiền
         }
     }
     private void calculateAndDisplayTotals() {
@@ -153,3 +187,16 @@ public class CartActivity extends AppCompatActivity {
 
     }
 }
+
+       /* editItemLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        CartItem updatedItem = (CartItem) result.getData().getSerializableExtra("updatedCartItem");
+
+                        Log.d("CartActivityINTENT", "onActivityResult - Updated ID: " + updatedItem.getCartId());
+
+                        loadCartItems(); // Load lại giỏ hàng từ DB
+                    }
+                }
+        );*/

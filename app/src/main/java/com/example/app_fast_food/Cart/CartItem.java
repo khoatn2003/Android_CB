@@ -79,6 +79,5 @@ public class CartItem implements Serializable {
     public void setPricePerItem(double pricePerItem) {
         this.pricePerItem = pricePerItem;
     }
-
     public double getToTalPrice(){return quantity*pricePerItem;}
 }

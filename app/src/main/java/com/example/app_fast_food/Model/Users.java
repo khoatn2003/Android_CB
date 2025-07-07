@@ -9,19 +9,19 @@ public class Users {
     private String address;
     private String fullname;
 
-    public Users(String email, String password, String phoneNumber, String address,String fullname) {
+    public Users(String email, String phoneNumber,String password, String address,String fullname) {
         this.email = email;
-        this.password = password;
         this.phoneNumber = phoneNumber;
+        this.password = password;
         this.address = address;
         this.fullname = fullname;
     }
 
-    public Users(int userID, String email, String password, String phoneNumber, String address,String fullname) {
+    public Users(int userID, String email, String phoneNumber, String password,String address,String fullname) {
         this.userID = userID;
         this.email = email;
-        this.password = password;
         this.phoneNumber = phoneNumber;
+        this.password = password;
         this.address = address;
         this.fullname = fullname;
     }

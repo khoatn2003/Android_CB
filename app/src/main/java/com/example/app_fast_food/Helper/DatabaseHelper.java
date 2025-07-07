@@ -8,17 +8,19 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.FileUriExposedException;
 import android.util.Log;
 
+import com.example.app_fast_food.Cart.CartItem;
 import com.example.app_fast_food.Model.Category;
 import com.example.app_fast_food.Model.Foods;
 import com.example.app_fast_food.Model.Users;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME ="FoodDB.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 7;
 
     //Bảng user
     private static final String TABLE_USERS = "Users";
@@ -48,7 +50,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_FOOD_STAR= "Star";
     public static final String COLUMN_FOOD_TIME_VALUE = "TimeValue";
     public static final String COLUMN_BEST_FOOD = "BestFood";
-    public static final String COLUMN_SEARCH_FOOD = "search_key";
 
     //Bảng Giỏ hàng
     public static final String TABLE_CART = "Cart";
@@ -75,7 +76,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_PHONE + " TEXT,"
                 + COLUMN_PASSWORD + " TEXT,"
                 + COLUMN_ADDRESS + " TEXT,"
-                + COLUMN_FULL_NAME + " TEXT)"; // Cột mới
+                + COLUMN_FULL_NAME + " TEXT)";
         db.execSQL(CREATE_TABLE);
         Log.i("DatabaseHelper", TABLE_USERS + " table created with version " + DATABASE_VERSION);
         // Thêm bảng Category chưa có
@@ -115,13 +116,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY (" + COLUMN_CART_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + COLUMN_USER_ID + ")"
                 + ")";
         db.execSQL(CREATE_CART_TABLE);
+        OrderDatabase.createTables(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 8){
+       if (oldVersion < 7){
             // Thêm cột mới mẫu : db.execSQL("ALTER TABLE " + TABLE_USERS + " ADD COLUMN " + COLUMN_FULL_NAME + " TEXT");
+           OrderDatabase.createTables(db);
         }
+
 
           /*Cập nhật khi thêm bảng mới
         if (oldVersion < x){}
@@ -173,7 +177,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String address = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ADDRESS));
             String fullname = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FULL_NAME));
             cursor.close();
-            return new Users(id,email,pass,phoneResult, address, fullname);
+            return new Users(id,email,phoneResult, pass,address, fullname);
         }
 
         if (cursor != null) cursor.close();
@@ -205,11 +209,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 String name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME));
                 list.add(new Category(id, imagePath, name));
             } while (cursor.moveToNext());
+
         }
 
         cursor.close();
         db.close();
         return list;
+
     }
 
     public String getCategoryNameById(int categoryId) {
@@ -222,6 +228,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return name;
+
     }
 
 }

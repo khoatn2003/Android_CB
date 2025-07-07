@@ -7,7 +7,8 @@
     <color name="grey">#F5F5F5</color>
     <color name="gray">#7d857b</color>
     <color name="green">#019934</color>
+    <color name="lightGreen">#00C853</color>
     <color name="lightGrey">#efefef</color>
-    <color name="be">#FF6600</color>
+    <color name="coralOrange">#FF7043</color>
 
 </resources>

@@ -79,8 +79,7 @@ public class ListFoodActivity extends BaseActivity {
     }
 
     private void loadFoodCategory() {
-        db = new DatabaseHelper(this);
-        foodDB = new FoodsDatabase(db.getReadableDatabase());
+        foodDB = new FoodsDatabase(this);
         binding.progressBar.setVisibility(View.VISIBLE);
         if (categoryId != -1) {
             List<Foods> foodsFromDb = foodDB.getFoodsByCategoryId(categoryId);

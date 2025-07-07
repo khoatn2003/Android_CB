@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.btndonhang.setOnClickListener(view -> {
-            Toast.makeText(this,"Chưa có trang này", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, OrderActivity.class));
         });
 
         binding.btnfav.setOnClickListener(view -> {
@@ -129,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         tabDots = findViewById(R.id.tabDots);
 
         bannerImages = Arrays.asList(
+                R.drawable.banner2,
                 R.drawable.banner,
                 R.drawable.banner1,
                 R.drawable.banner3
@@ -164,8 +165,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadBestFoods() {
-        db = new DatabaseHelper(this);
-        foodDB = new FoodsDatabase(db.getReadableDatabase());
+        foodDB = new FoodsDatabase(this);
         // Lấy danh sách best foods từ database
         List<Foods> foodsFromDb = foodDB.getBestFoods();
         if (foodsFromDb != null && !foodsFromDb.isEmpty()) {
@@ -217,15 +217,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkListFood(){
-        db = new DatabaseHelper(this);
-        foodDB = new FoodsDatabase(db.getReadableDatabase());
+        foodDB = new FoodsDatabase(this);
         if (foodDB.getAllFoods().isEmpty()) {
             insertInitialDataFoods();
         }
     }
     private void insertInitialDataFoods() {
-        db = new DatabaseHelper(this);
-        foodDB = new FoodsDatabase(db.getWritableDatabase());
+        foodDB = new FoodsDatabase(this);
         //Pizza
         foodDB.addFood(new Foods(0, "Margherita","Pizza phô mai được làm từ Ý",250000,"margherita",0,4.5,15,false));
         foodDB.addFood(new Foods(1, "Veggie Supreme","Veggie Supreme được làm từ Ý",250000,"pizza7",0,4.5,15,false));

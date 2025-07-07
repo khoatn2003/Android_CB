@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,13 +19,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.app_fast_food.Adapter.dinhDangTien;
 import com.example.app_fast_food.Cart.CartActivity;
-import com.example.app_fast_food.Cart.CartDatabase;
+import com.example.app_fast_food.Helper.CartDatabase;
 import com.example.app_fast_food.Cart.CartItem;
-import com.example.app_fast_food.Model.Cart;
 import com.example.app_fast_food.Model.Foods;
 import com.example.app_fast_food.R;
 import com.example.app_fast_food.databinding.ActivityDetailFoodBinding;
 import com.github.chrisbanes.photoview.PhotoView;
+
+import java.util.ArrayList;
 
 public class DetailFoodActivity extends AppCompatActivity {
     private Foods item; // Sản phẩm chi tiết
@@ -149,16 +149,33 @@ public class DetailFoodActivity extends AppCompatActivity {
                 }
             });
 
-
             binding.emptyBtn.setOnClickListener(view -> finish());
         }
+        binding.buyBtn.setOnClickListener(v->{
+            CartItem cartItem = new CartItem();
+            cartItem.setFoodId(item.getId());
+            cartItem.setFoodTitle(item.getTitle());
+            cartItem.setFoodImagePath(item.getImagePath());
+            cartItem.setPricePerItem(item.getPrice());
+            cartItem.setQuantity(num);
+            String note = binding.noteInput.getText().toString().trim();
+            cartItem.setNote(note);
+
+            ArrayList<CartItem> buyNowList = new ArrayList<>();
+            buyNowList.add(cartItem);
+
+            Intent intent = new Intent(this, ThanhToanActivity.class);
+            intent.putExtra("cart_items", buyNowList);
+            intent.putExtra("from_buy_now", true); // thêm cờ
+            startActivity(intent);
+        });
 
         binding.cartBtn.setOnClickListener(view -> startActivity(new Intent(DetailFoodActivity.this, CartActivity.class)));
+
     }
 
     private void updateButtonState(CartItem cartItem) {
         if (cartItem == null && num == 0) {
-            // Sản phẩm chưa có trong giỏ, số lượng = 0 → chỉ hiện nút quay lại
             binding.addToCardBtn.setVisibility(View.GONE);
             binding.buyBtn.setVisibility(View.GONE);
             binding.emptyBtn.setVisibility(View.VISIBLE);

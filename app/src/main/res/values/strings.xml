@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">APP_FAST_FOOD</string>
+    <string name="product_quantity">x%d</string>
+    <string name="tab_cho_xac_nhan">Chờ xác nhận</string>
+    <string name="tab_cho_lay_hang">Chờ lấy hàng</string>
+    <string name="tab_dang_giao">Đang giao</string>
+    <string name="tab_da_giao">Đã giao</string>
+    <string name="tab_da_huy">Đã hủy</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>
